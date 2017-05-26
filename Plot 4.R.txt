@@ -1,0 +1,27 @@
+## Data Extraction 
+library(ggplot2)
+setwd("C:/Data Science Assignment")
+NEI <- readRDS("summarySCC_PM25.rds")
+### SCC Dataset not required for plot 1
+SCC <- readRDS("Source_Classification_Code.rds")
+## Convert to data frame and get Baltimore data 
+
+NEI.df<-data.frame(NEI)
+SCC.df<-data.frame(SCC)
+
+NEI.df.Baltimore.totalPM <-aggregate(Emissions ~ year ,data=NEI.df.Baltimore,FUN=sum)
+
+SCC.COMB <- grepl("comb", SCC.df$SCC.Level.One, ignore.case=TRUE)
+SCC.COAL <- grepl("coal", SCC.df$SCC.Level.Four, ignore.case=TRUE) 
+SCC.COMBINE <- (SCC.COMB & SCC.COAL)
+combustionSCC <- SCC.df[SCC.COMBINE,]$SCC
+combustionNEI <- NEI.df[NEI.df$SCC %in% combustionSCC,]
+
+## Open PNG and Draw plot
+
+png("plot 4.png", width=620, height=620) 
+
+ggplot(data=combustionNEI,aes(factor(year),Emissions)) + geom_bar(stat="identity") +labs(x="year", y=expression("Total PM"[2.5]*" Emission (Tons)")) + 
+    labs(title=expression("PM"[2.5]*" Coal Combustion Source Emissions Across US from 1999-2008"))
+
+dev.off()
